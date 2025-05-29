@@ -35,8 +35,8 @@ if (!fs.existsSync(screenshotsDir)) {
     const bridge = new FlutterSeleniumBridge(driver);  
 
     console.log('Navigating to app...');
-    await driver.get('http://localhost:8080'); // Replace with your Flutter Web app URL
-    await driver.sleep(10000);
+    await driver.get('http://localhost:MUDAR'); MUDAR // Replace with your Flutter Web app URL
+    await driver.sleep(5000);
 
     await driver.takeScreenshot().then((image, err) => {
         require('fs').writeFile('./fotos/markup2/tela-inicio.png', image, 'base64', function (err) {
@@ -46,10 +46,62 @@ if (!fs.existsSync(screenshotsDir)) {
               console.log('Erro ->' + err);
           }
         });
-      });
+    });
+
+    // Click on CI_CD_8 button
+    const ciCd8ButtonXPath = "//flt-semantics[text()='Grupo CI_CD_8']";
+    const ciCd8Button = await driver.findElement(By.xpath(ciCd8ButtonXPath));
+    await ciCd8Button.click();
+    await driver.sleep(5000);
+
+    await driver.takeScreenshot().then((image, err) => {
+        require('fs').writeFile('./fotos/markup2/tela-login.png', image, 'base64', function (err) {
+          if (err == null){
+              console.log('Gravou Foto 2 - Tela de Login');
+          }else{
+              console.log('Erro ->' + err);
+          }
+        });
+    });
+
+    // Handle login
+    const loginInputs = await driver.findElements(By.css('textarea, input, [contenteditable="true"]'));
+    
+    // Email field (first input)
+    await loginInputs[0].sendKeys('admin@email.com');
+    // Password field (second input)
+    await loginInputs[1].sendKeys('123456'); // At least 6 characters as per validation
+
+    // Find and click the login button
+    const loginButtonXPath = "//flt-semantics[text()='Entrar']"; // Updated to match the actual button text
+    const loginButton = await driver.findElement(By.xpath(loginButtonXPath));
+    await loginButton.click();
+    await driver.sleep(5000);
+
+    // Check for error message if login fails
+    try {
+        const errorMessage = await driver.findElement(By.css('flt-semantics[text*="Email ou senha inválidos"]'));
+        if (errorMessage) {
+            console.log('Login failed with error message');
+            // You might want to retry with different credentials or fail the test
+        }
+    } catch (e) {
+        // No error message found, login might have succeeded
+        console.log('No error message found, proceeding with test');
+    }
+
+    await driver.takeScreenshot().then((image, err) => {
+        require('fs').writeFile('./fotos/markup2/tela-apos-login.png', image, 'base64', function (err) {
+          if (err == null){
+              console.log('Gravou Foto 3 - Tela Após Login');
+          }else{
+              console.log('Erro ->' + err);
+          }
+        });
+    });
 
     // Test Multiplier Markup
-    const multiplierButtonXPath = "//flt-semantics[text()='Multiplier Markup']";
+    const multiplierButtonXPath = "//flt-semantics[text()='Calculadora de Markup']";
     const multiplierButton = await driver.findElement(By.xpath(multiplierButtonXPath));
     await multiplierButton.click();  
 
@@ -57,12 +109,12 @@ if (!fs.existsSync(screenshotsDir)) {
     await driver.takeScreenshot().then((image, err) => {
         require('fs').writeFile('./fotos/markup2/tela-multiplier.png', image, 'base64', function (err) {
           if (err == null){
-              console.log('Gravou Foto 2 - Tela Multiplier');
+              console.log('Gravou Foto 4 - Tela Multiplier');
           }else{
               console.log('Erro ->' + err);
           }
         });
-      });
+    });
 
     // Seleciona todos os inputs, textareas e elementos contenteditable
     const inputs = await driver.findElements(By.css('textarea, input, [contenteditable="true"]'));
@@ -98,12 +150,12 @@ if (!fs.existsSync(screenshotsDir)) {
     await driver.takeScreenshot().then((image, err) => {
         require('fs').writeFile('./fotos/markup2/resultado-multiplier.png', image, 'base64', function (err) {
           if (err == null){
-              console.log('Gravou Foto 3 - Resultado Multiplier');
+              console.log('Gravou Foto 5 - Resultado Multiplier');
           }else{
               console.log('Erro ->' + err);
           }
         });
-      });
+    });
 
     // Test Divisor Markup
     const backButtonXPath = "//flt-semantics[text()='Back']";
@@ -111,7 +163,7 @@ if (!fs.existsSync(screenshotsDir)) {
     await backButton.click();
     await driver.sleep(2000);
 
-    const divisorButtonXPath = "//flt-semantics[text()='Divisor Markup']";
+    const divisorButtonXPath = "//flt-semantics[text()='Calculadora de Divisão de Markup']";
     const divisorButton = await driver.findElement(By.xpath(divisorButtonXPath));
     await divisorButton.click();
     await driver.sleep(5000);
@@ -119,12 +171,12 @@ if (!fs.existsSync(screenshotsDir)) {
     await driver.takeScreenshot().then((image, err) => {
         require('fs').writeFile('./fotos/markup2/tela-divisor.png', image, 'base64', function (err) {
           if (err == null){
-              console.log('Gravou Foto 4 - Tela Divisor');
+              console.log('Gravou Foto 6 - Tela Divisor');
           }else{
               console.log('Erro ->' + err);
           }
         });
-      });
+    });
 
     // Fill divisor inputs
     const divisorInputs = await driver.findElements(By.css('textarea, input, [contenteditable="true"]'));
@@ -138,12 +190,12 @@ if (!fs.existsSync(screenshotsDir)) {
     await driver.takeScreenshot().then((image, err) => {
         require('fs').writeFile('./fotos/markup2/resultado-divisor.png', image, 'base64', function (err) {
           if (err == null){
-              console.log('Gravou Foto 5 - Resultado Divisor');
+              console.log('Gravou Foto 7 - Resultado Divisor');
           }else{
               console.log('Erro ->' + err);
           }
         });
-      });
+    });
 
    await driver.sleep(5000);
    driver.quit();    
