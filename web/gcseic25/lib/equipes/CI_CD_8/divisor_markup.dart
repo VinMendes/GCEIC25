@@ -74,6 +74,7 @@ class _DivisorMarkupPageState extends State<DivisorMarkupPage> {
                 ),
                 keyboardType: TextInputType.number,
                 validator: _validarCampo,
+                semanticsLabel: 'Preço de Venda input field',
               ),
               SizedBox(height: 16),
               TextFormField(
@@ -84,16 +85,21 @@ class _DivisorMarkupPageState extends State<DivisorMarkupPage> {
                 ),
                 keyboardType: TextInputType.number,
                 validator: _validarCampo,
+                semanticsLabel: 'Custo Total de Vendas input field',
               ),
               SizedBox(height: 16),
               SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _calcularMarkup,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Calcular',
-                    style: TextStyle(fontSize: 18),
+              Semantics(
+                label: 'Calculate',
+                button: true,
+                child: ElevatedButton(
+                  onPressed: _calcularMarkup,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Calcular',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
               ),

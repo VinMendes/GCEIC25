@@ -169,6 +169,7 @@ class _LoginCard extends StatelessWidget {
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) =>
                       (v == null || !v.contains('@')) ? 'Digite um email válido' : null,
+                  semanticsLabel: 'Email input field',
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -181,6 +182,7 @@ class _LoginCard extends StatelessWidget {
                   obscureText: true,
                   validator: (v) =>
                       (v == null || v.length < 6) ? 'Mínimo 6 caracteres' : null,
+                  semanticsLabel: 'Password input field',
                 ),
                 const SizedBox(height: 28),
                 if (error != null)
@@ -191,21 +193,25 @@ class _LoginCard extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: kPrimaryBlue,
-                      foregroundColor: Colors.white, // ← CONTRASTE
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                  child: Semantics(
+                    label: 'Entrar',
+                    button: true,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPrimaryBlue,
+                        foregroundColor: Colors.white, // ← CONTRASTE
+                        textStyle: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 4,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 4,
+                      onPressed: onLogin,
+                      child: const Text('Entrar'),
                     ),
-                    onPressed: onLogin,
-                    child: const Text('Entrar'),
                   ),
                 ),
               ],

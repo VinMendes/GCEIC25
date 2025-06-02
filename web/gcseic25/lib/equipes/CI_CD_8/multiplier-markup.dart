@@ -76,6 +76,7 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
                 ),
                 keyboardType: TextInputType.number,
                 validator: _validarCampo,
+                semanticsLabel: 'Despesas Variáveis input field',
               ),
               SizedBox(height: 16),
               TextFormField(
@@ -86,6 +87,7 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
                 ),
                 keyboardType: TextInputType.number,
                 validator: _validarCampo,
+                semanticsLabel: 'Despesas Fixas input field',
               ),
               SizedBox(height: 16),
               TextFormField(
@@ -96,15 +98,20 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
                 ),
                 keyboardType: TextInputType.number,
                 validator: _validarCampo,
+                semanticsLabel: 'Margem de Lucro input field',
               ),
               SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _calcularMarkup,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Calcular',
-                    style: TextStyle(fontSize: 18),
+              Semantics(
+                label: 'Calculate',
+                button: true,
+                child: ElevatedButton(
+                  onPressed: _calcularMarkup,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Calcular',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
               ),
