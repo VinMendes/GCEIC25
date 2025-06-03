@@ -3,8 +3,12 @@ import 'dart:async'; // Para o Timer
 import 'package:http/http.dart' as http;
 import 'package:gcseic25/equipes/base/base.dart';
 import 'package:gcseic25/equipes/CI_CD_8/auth/login.dart';
+import 'package:flutter/semantics.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Ensure semantics are enabled for testing
+  SemanticsBinding.instance.ensureSemantics();
   runApp(MyApp());
 }
 
@@ -52,6 +56,7 @@ class HomePage extends StatelessWidget {
             ),
             SizedBox(height: 20),
             Semantics(
+              identifier: 'Grupo CI_CD_8',
               label: 'Grupo CI_CD_8',
               button: true,
               child: ElevatedButton(
