@@ -51,11 +51,15 @@ class HomePage extends StatelessWidget {
               child: Text('Abrir Consulta 2'),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/CI_CD_8');
-              },
-              child: Text('Grupo CI_CD_8'),
+            Semantics(
+              label: 'Grupo CI_CD_8',
+              button: true,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/CI_CD_8');
+                },
+                child: Text('Grupo CI_CD_8'),
+              ),
             ),
           ],
         ),
