@@ -60,6 +60,14 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Calculadora de Markup'),
+        leading: Semantics(
+          label: 'Back',
+          button: true,
+          child: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -68,37 +76,46 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                controller: _despesasVariaveisController,
-                decoration: InputDecoration(
-                  labelText: 'Despesas Variáveis (%)',
-                  border: OutlineInputBorder(),
+              Semantics(
+                identifier: 'Despesas Variáveis',
+                textField: true,
+                child: TextFormField(
+                  controller: _despesasVariaveisController,
+                  decoration: InputDecoration(
+                    labelText: 'Despesas Variáveis (%)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: _validarCampo,
                 ),
-                keyboardType: TextInputType.number,
-                validator: _validarCampo,
-                semanticsLabel: 'Despesas Variáveis input field',
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _despesasFixasController,
-                decoration: InputDecoration(
-                  labelText: 'Despesas Fixas (%)',
-                  border: OutlineInputBorder(),
+              Semantics(
+                identifier: 'Despesas Fixas',
+                textField: true,
+                child: TextFormField(
+                  controller: _despesasFixasController,
+                  decoration: InputDecoration(
+                    labelText: 'Despesas Fixas (%)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: _validarCampo,
                 ),
-                keyboardType: TextInputType.number,
-                validator: _validarCampo,
-                semanticsLabel: 'Despesas Fixas input field',
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _margemLucroController,
-                decoration: InputDecoration(
-                  labelText: 'Margem de Lucro (%)',
-                  border: OutlineInputBorder(),
+              Semantics(
+                identifier: 'Margem de Lucro',
+                textField: true,
+                child: TextFormField(
+                  controller: _margemLucroController,
+                  decoration: InputDecoration(
+                    labelText: 'Margem de Lucro (%)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: _validarCampo,
                 ),
-                keyboardType: TextInputType.number,
-                validator: _validarCampo,
-                semanticsLabel: 'Margem de Lucro input field',
               ),
               SizedBox(height: 24),
               Semantics(

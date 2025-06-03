@@ -35,7 +35,7 @@ if (!fs.existsSync(screenshotsDir)) {
     const bridge = new FlutterSeleniumBridge(driver);  
 
     console.log('Navigating to app...');
-    await driver.get('http://localhost:MUDAR'); MUDAR // Replace with your Flutter Web app URL
+    await driver.get('http://localhost:8080'); // Flutter web app URL
     await driver.sleep(5000);
 
     await driver.takeScreenshot().then((image, err) => {
