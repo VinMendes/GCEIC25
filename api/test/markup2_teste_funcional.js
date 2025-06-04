@@ -148,7 +148,9 @@ async function findBy(driver, selectors) {
       const el = await driver.wait(until.elementLocated(sel), TIMEOUT);
       await driver.wait(until.elementIsVisible(el), TIMEOUT);
       return el;
-    } catch (_) {}
+    } catch (e) {
+        throw new Error(`Elemento não encontrado: ${sel}`,e);
+    }
   }
   throw new Error(`Elemento não encontrado: ${selectors[0]}`);
 }
