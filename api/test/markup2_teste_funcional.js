@@ -294,25 +294,45 @@ if (!fs.existsSync(screenshotsDir)) {
 
             // Test Multiplier Markup
             console.log('Testando Calculadora de Markup...');
+            await driver.sleep(2000); // Give Flutter time to render the home screen
+
             const multiplierSelectors = [
-                By.css('[data-semantics-label="Calculadora de Markup"]'),
-                By.css('flt-semantics[aria-label="Calculadora de Markup"]'),
-                By.xpath("//flt-semantics[@aria-label='Calculadora de Markup']"),
-                By.xpath("//button[contains(., 'Calculadora de Markup')]"),
-                By.xpath("//*[@role='button' and contains(., 'Calculadora de Markup')]")
+                By.xpath("//flt-semantics[contains(@aria-label, 'Calculadora de Markup')]"),
+                By.xpath("//flt-semantics[.//text()[contains(., 'Calculadora de Markup')]]"),
+                By.css("flt-semantics[aria-label*='Calculadora de Markup']"),
+                By.xpath("//*[text()[contains(., 'Calculadora de Markup')]]"),
+                By.xpath("//flt-glass-pane//flt-semantics[contains(., 'Calculadora de Markup')]")
             ];
 
             let multiplierButton = null;
             for (const selector of multiplierSelectors) {
                 try {
                     console.log('Tentando encontrar botão Calculadora de Markup com seletor:', selector);
-                    multiplierButton = await driver.wait(until.elementLocated(selector), 3000);
+                    // Increase wait time for first attempt after login
+                    const timeout = multiplierButton === null ? 5000 : 3000;
+                    multiplierButton = await driver.wait(until.elementLocated(selector), timeout);
                     if (multiplierButton) {
                         console.log('Botão Calculadora de Markup encontrado!');
                         // Try to make the element visible and interactable
                         await driver.executeScript("arguments[0].scrollIntoView(true);", multiplierButton);
                         await driver.sleep(1000);
-                        break;
+
+                        // Verify if the element is actually clickable
+                        const isClickable = await driver.executeScript(`
+                            const rect = arguments[0].getBoundingClientRect();
+                            const isVisible = rect.top >= 0 && rect.left >= 0 && 
+                                rect.bottom <= window.innerHeight && rect.right <= window.innerWidth;
+                            return isVisible && arguments[0].offsetWidth > 0 && arguments[0].offsetHeight > 0;
+                        `, multiplierButton);
+
+                        if (isClickable) {
+                            console.log('Botão está visível e clicável');
+                            break;
+                        } else {
+                            console.log('Botão encontrado mas não está clicável, tentando próximo seletor...');
+                            multiplierButton = null;
+                            continue;
+                        }
                     }
                 } catch (err) {
                     console.log('Seletor falhou, tentando próximo... Erro:', err.message);
@@ -321,6 +341,11 @@ if (!fs.existsSync(screenshotsDir)) {
             }
 
             if (!multiplierButton) {
+                // Take a screenshot of the failure state
+                await driver.takeScreenshot().then((image) => {
+                    fs.writeFileSync('./fotos/markup2/erro-botao-nao-encontrado.png', image, 'base64');
+                    console.log('Gravou Foto - Estado quando botão não foi encontrado');
+                });
                 throw new Error('Botão Calculadora de Markup não encontrado após tentar todos os seletores');
             }
 
