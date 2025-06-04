@@ -4,6 +4,7 @@ import 'dart:async'; // Para o Timer
 import 'package:http/http.dart' as http;
 import 'package:gcseic25/equipes/base/base.dart';
 import 'package:gcseic25/equipes/CI_CD_8/auth/login.dart';
+import 'package:flutter/semantics.dart';
 import 'package:gcseic25/equipes/CI_CD_8/splashscreen.dart' as ciSplash;
 import 'package:gcseic25/page/markup.dart';
 import 'package:gcseic25/page/login.dart';
@@ -66,14 +67,16 @@ class HomePage extends StatelessWidget {
               child: Text('Abrir Consulta 2'),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/CI_CD_8');
-              },
-              child: Text('Grupo CI_CD_8'),
-                Navigator.pushNamed(context, '/login');
-              },
-              child: Text('MARKUP MULTIPLICADOR'),
+            Semantics(
+              identifier: 'Grupo CI_CD_8',
+              label: 'Grupo CI_CD_8',
+              button: true,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/CI_CD_8');
+                },
+                child: Text('Grupo CI_CD_8'),
+              ),
             ),
             Semantics(
               // identifier: 'Entrar',

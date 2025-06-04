@@ -58,6 +58,14 @@ class _DivisorMarkupPageState extends State<DivisorMarkupPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Calculadora de Markup'),
+        leading: Semantics(
+          label: 'Back',
+          button: true,
+          child: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -66,34 +74,46 @@ class _DivisorMarkupPageState extends State<DivisorMarkupPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                controller: _precoVendaController,
-                decoration: InputDecoration(
-                  labelText: 'Preço de Venda',
-                  border: OutlineInputBorder(),
+              Semantics(
+                identifier: 'Preço de Venda',
+                textField: true,
+                child: TextFormField(
+                  controller: _precoVendaController,
+                  decoration: InputDecoration(
+                    labelText: 'Preço de Venda',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: _validarCampo,
                 ),
-                keyboardType: TextInputType.number,
-                validator: _validarCampo,
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _custoTotalVendasController,
-                decoration: InputDecoration(
-                  labelText: 'Custo Total de Vendas',
-                  border: OutlineInputBorder(),
+              Semantics(
+                identifier: 'Custo Total de Vendas',
+                textField: true,
+                child: TextFormField(
+                  controller: _custoTotalVendasController,
+                  decoration: InputDecoration(
+                    labelText: 'Custo Total de Vendas',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: _validarCampo,
                 ),
-                keyboardType: TextInputType.number,
-                validator: _validarCampo,
               ),
               SizedBox(height: 16),
               SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _calcularMarkup,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Calcular',
-                    style: TextStyle(fontSize: 18),
+              Semantics(
+                label: 'Calculate',
+                button: true,
+                child: ElevatedButton(
+                  onPressed: _calcularMarkup,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Calcular',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
               ),

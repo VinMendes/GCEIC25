@@ -178,22 +178,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHomeButton(BuildContext context,
       {required String label, required VoidCallback onPressed}) {
-    return SizedBox(
-      width: double.infinity,
+    return Semantics(
+      label: label,
+      button: true,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF007BFF),
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          elevation: 4,
         ),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
     );

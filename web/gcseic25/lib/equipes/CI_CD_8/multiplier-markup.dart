@@ -60,6 +60,14 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Calculadora de Markup'),
+        leading: Semantics(
+          label: 'Back',
+          button: true,
+          child: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -68,43 +76,63 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                controller: _despesasVariaveisController,
-                decoration: InputDecoration(
-                  labelText: 'Despesas Variáveis (%)',
-                  border: OutlineInputBorder(),
+              Semantics(
+                identifier: 'Despesas Variáveis',
+                label: 'Despesas Variáveis',
+                textField: true,
+                child: TextFormField(
+                  controller: _despesasVariaveisController,
+                  decoration: InputDecoration(
+                    labelText: 'Despesas Variáveis (%)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: _validarCampo,
                 ),
-                keyboardType: TextInputType.number,
-                validator: _validarCampo,
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _despesasFixasController,
-                decoration: InputDecoration(
-                  labelText: 'Despesas Fixas (%)',
-                  border: OutlineInputBorder(),
+              Semantics(
+                identifier: 'Despesas Fixas',
+                label: 'Despesas Fixas',
+                textField: true,
+                child: TextFormField(
+                  controller: _despesasFixasController,
+                  decoration: InputDecoration(
+                    labelText: 'Despesas Fixas (%)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: _validarCampo,
                 ),
-                keyboardType: TextInputType.number,
-                validator: _validarCampo,
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _margemLucroController,
-                decoration: InputDecoration(
-                  labelText: 'Margem de Lucro (%)',
-                  border: OutlineInputBorder(),
+              Semantics(
+                identifier: 'Margem de Lucro',
+                label: 'Margem de Lucro',
+                textField: true,
+                child: TextFormField(
+                  controller: _margemLucroController,
+                  decoration: InputDecoration(
+                    labelText: 'Margem de Lucro (%)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: _validarCampo,
                 ),
-                keyboardType: TextInputType.number,
-                validator: _validarCampo,
               ),
               SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _calcularMarkup,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Calcular',
-                    style: TextStyle(fontSize: 18),
+              Semantics(
+                identifier: 'Calculate',
+                label: 'Calculate',
+                button: true,
+                child: ElevatedButton(
+                  onPressed: _calcularMarkup,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Calcular',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
               ),
