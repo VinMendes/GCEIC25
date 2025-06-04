@@ -33,7 +33,7 @@ if (!fs.existsSync(screenshotsDir)) {
         
         // Wait for page load and Flutter initialization
         console.log('Aguardando carregamento da página e inicialização do Flutter...');
-        await driver.sleep(20000);
+        await driver.sleep(10000);
         
         // Take initial screenshot
         await driver.takeScreenshot().then((image) => {
@@ -55,12 +55,13 @@ if (!fs.existsSync(screenshotsDir)) {
         for (const selector of selectors) {
             try {
                 console.log('Tentando novo seletor...');
-                button = await driver.wait(until.elementLocated(selector), 5000);
+                button = await driver.wait(until.elementLocated(selector), 3000);
                 if (button) {
                     console.log('Botão encontrado!');
                     break;
                 }
-            } catch (_) {
+            } catch (err) {
+                console.log('Seletor falhou, tentando próximo... Erro:', err.message);
                 continue;
             }
         }
@@ -68,7 +69,7 @@ if (!fs.existsSync(screenshotsDir)) {
         if (button) {
             console.log('Clicando no botão...');
             await button.click();
-            await driver.sleep(5000);
+            await driver.sleep(3000);
             
             // Take screenshot after clicking
             await driver.takeScreenshot().then((image) => {
@@ -79,15 +80,15 @@ if (!fs.existsSync(screenshotsDir)) {
             // Handle login
             console.log('Preenchendo formulário de login...');
             
-            // Wait for Flutter to fully render the form
-            await driver.sleep(2000);
+            // Wait longer for Flutter to fully render the form
+            await driver.sleep(3000);
             
             // Try to find email input using multiple selectors
             const emailSelectors = [
                 By.css('[data-semantics-identifier="Email"]'),
-                By.css('[data-semantics-role="textbox"][data-semantics-label="Email"]'),
+                By.css('input[aria-label="Email"]'),
                 By.css('flt-semantics[aria-label="Email"]'),
-                By.xpath("//flt-semantics[contains(@aria-label, 'Email')]//input"),
+                By.xpath("//flt-semantics[contains(@aria-label, 'Email')]"),
                 By.xpath("//input[@aria-label='Email']")
             ];
 
@@ -95,12 +96,15 @@ if (!fs.existsSync(screenshotsDir)) {
             for (const selector of emailSelectors) {
                 try {
                     emailInput = await driver.wait(until.elementLocated(selector), 5000);
-                    if (emailInput && await emailInput.isDisplayed()) {
+                    if (emailInput) {
                         console.log('Campo de email encontrado!');
+                        // Try to make the element visible and interactable
+                        await driver.executeScript("arguments[0].scrollIntoView(true);", emailInput);
+                        await driver.sleep(1000);
                         break;
                     }
-                } catch (error) {
-                    console.log('Tentando próximo seletor para email... Erro:', error.message);
+                } catch (err) {
+                    console.log('Tentando próximo seletor para email... Erro:', err.message);
                     continue;
                 }
             }
@@ -112,9 +116,9 @@ if (!fs.existsSync(screenshotsDir)) {
             // Try to find password input using multiple selectors
             const passwordSelectors = [
                 By.css('[data-semantics-identifier="Senha"]'),
-                By.css('[data-semantics-role="textbox"][data-semantics-label="Senha"]'),
+                By.css('input[aria-label="Senha"]'),
                 By.css('flt-semantics[aria-label="Senha"]'),
-                By.xpath("//flt-semantics[contains(@aria-label, 'Senha')]//input"),
+                By.xpath("//flt-semantics[contains(@aria-label, 'Senha')]"),
                 By.xpath("//input[@aria-label='Senha']")
             ];
 
@@ -122,12 +126,15 @@ if (!fs.existsSync(screenshotsDir)) {
             for (const selector of passwordSelectors) {
                 try {
                     passwordInput = await driver.wait(until.elementLocated(selector), 5000);
-                    if (passwordInput && await passwordInput.isDisplayed()) {
+                    if (passwordInput) {
                         console.log('Campo de senha encontrado!');
+                        // Try to make the element visible and interactable
+                        await driver.executeScript("arguments[0].scrollIntoView(true);", passwordInput);
+                        await driver.sleep(1000);
                         break;
                     }
-                } catch (error) {
-                    console.log('Tentando próximo seletor para senha... Erro:', error.message);
+                } catch (err) {
+                    console.log('Tentando próximo seletor para senha... Erro:', err.message);
                     continue;
                 }
             }
@@ -136,17 +143,55 @@ if (!fs.existsSync(screenshotsDir)) {
                 throw new Error('Campo de senha não encontrado');
             }
 
-            // Use JavaScript to set values directly
-            await driver.executeScript("arguments[0].value = arguments[1];", emailInput, 'admin@email.com');
-            await driver.executeScript("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", emailInput);
-            await driver.sleep(1000);
+            // Multiple attempts to set email value
+            console.log('Tentando definir valor do email...');
+            try {
+                // Try direct sendKeys first
+                await emailInput.sendKeys('admin@email.com');
+            } catch (err) {
+                console.log('SendKeys falhou, tentando JavaScript... Erro:', err.message);
+                // Try JavaScript if direct input fails
+                await driver.executeScript(`
+                    arguments[0].value = 'admin@email.com';
+                    arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+                    arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+                    arguments[0].dispatchEvent(new Event('blur', { bubbles: true }));
+                `, emailInput);
+            }
             
-            await driver.executeScript("arguments[0].scrollIntoView(true);", passwordInput);
-            await driver.wait(until.elementIsVisible(passwordInput), 5000);
+            // Verify email value was set
+            const emailValue = await driver.executeScript("return arguments[0].value;", emailInput);
+            console.log('Valor do email definido:', emailValue);
             
-            await driver.executeScript("arguments[0].value = arguments[1];", passwordInput, '123456');
-            await driver.executeScript("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", passwordInput);
-            await driver.sleep(1000);
+            await driver.sleep(2000);
+
+            // Multiple attempts to set password value
+            console.log('Tentando definir valor da senha...');
+            try {
+                // Try direct sendKeys first
+                await passwordInput.sendKeys('123456');
+            } catch (err) {
+                console.log('SendKeys falhou, tentando JavaScript... Erro:', err.message);
+                // Try JavaScript if direct input fails
+                await driver.executeScript(`
+                    arguments[0].value = '123456';
+                    arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+                    arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+                    arguments[0].dispatchEvent(new Event('blur', { bubbles: true }));
+                `, passwordInput);
+            }
+
+            // Verify password value was set
+            const passwordValue = await driver.executeScript("return arguments[0].value;", passwordInput);
+            console.log('Valor da senha definido:', passwordValue);
+
+            await driver.sleep(2000);
+
+            // Take screenshot to verify form state
+            await driver.takeScreenshot().then((image) => {
+                fs.writeFileSync('./fotos/markup2/form-preenchido.png', image, 'base64');
+                console.log('Gravou Foto - Formulário Preenchido');
+            });
 
             // Find and click login button
             const loginButtonSelectors = [
@@ -159,13 +204,16 @@ if (!fs.existsSync(screenshotsDir)) {
             let loginButton = null;
             for (const selector of loginButtonSelectors) {
                 try {
-                    loginButton = await driver.wait(until.elementLocated(selector), 5000);
-                    if (loginButton && await loginButton.isDisplayed()) {
+                    loginButton = await driver.wait(until.elementLocated(selector), 3000);
+                    if (loginButton) {
                         console.log('Botão de login encontrado!');
+                        // Try to make the element visible and interactable
+                        await driver.executeScript("arguments[0].scrollIntoView(true);", loginButton);
+                        await driver.sleep(1000);
                         break;
                     }
-                } catch (_) {
-                    console.log('Tentando próximo seletor para botão de login...');
+                } catch (err) {
+                    console.log('Tentando próximo seletor para botão de login... Erro:', err.message);
                     continue;
                 }
             }
@@ -174,8 +222,68 @@ if (!fs.existsSync(screenshotsDir)) {
                 throw new Error('Botão de login não encontrado');
             }
 
-            // Use JavaScript click instead of direct click
-            await driver.executeScript("arguments[0].click();", loginButton);
+            // Multiple attempts to click the login button
+            console.log('Tentando clicar no botão de login...');
+            let clickSuccess = false;
+            
+            // Attempt 1: Direct click
+            try {
+                await loginButton.click();
+                clickSuccess = true;
+                console.log('Click direto bem sucedido');
+            } catch (err) {
+                console.log('Click direto falhou, tentando alternativas... Erro:', err.message);
+            }
+
+            // Attempt 2: JavaScript click if direct click failed
+            if (!clickSuccess) {
+                try {
+                    await driver.executeScript("arguments[0].click();", loginButton);
+                    clickSuccess = true;
+                    console.log('JavaScript click bem sucedido');
+                } catch (err) {
+                    console.log('JavaScript click falhou... Erro:', err.message);
+                }
+            }
+
+            // Attempt 3: Try dispatching multiple events if both clicks failed
+            if (!clickSuccess) {
+                try {
+                    await driver.executeScript(`
+                        arguments[0].dispatchEvent(new MouseEvent('mouseover', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                        arguments[0].dispatchEvent(new MouseEvent('mousedown', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                        arguments[0].dispatchEvent(new MouseEvent('click', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                        arguments[0].dispatchEvent(new MouseEvent('mouseup', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                    `, loginButton);
+                    clickSuccess = true;
+                    console.log('Event dispatch bem sucedido');
+                } catch (err) {
+                    console.log('Event dispatch falhou... Erro:', err.message);
+                }
+            }
+
+            if (!clickSuccess) {
+                throw new Error('Não foi possível clicar no botão de login após todas as tentativas');
+            }
+
+            // Wait for navigation
+            console.log('Aguardando navegação após o login...');
             await driver.sleep(5000);
 
             // Take screenshot after clicking
@@ -188,142 +296,371 @@ if (!fs.existsSync(screenshotsDir)) {
             console.log('Testando Calculadora de Markup...');
             const multiplierSelectors = [
                 By.css('[data-semantics-label="Calculadora de Markup"]'),
-                By.xpath("//flt-semantics[contains(., 'Calculadora de Markup')]")
+                By.css('flt-semantics[aria-label="Calculadora de Markup"]'),
+                By.xpath("//flt-semantics[@aria-label='Calculadora de Markup']"),
+                By.xpath("//button[contains(., 'Calculadora de Markup')]"),
+                By.xpath("//*[@role='button' and contains(., 'Calculadora de Markup')]")
             ];
 
             let multiplierButton = null;
             for (const selector of multiplierSelectors) {
                 try {
-                    multiplierButton = await driver.wait(until.elementLocated(selector), 5000);
-                    if (multiplierButton) break;
-                } catch (_) {
+                    console.log('Tentando encontrar botão Calculadora de Markup com seletor:', selector);
+                    multiplierButton = await driver.wait(until.elementLocated(selector), 3000);
+                    if (multiplierButton) {
+                        console.log('Botão Calculadora de Markup encontrado!');
+                        // Try to make the element visible and interactable
+                        await driver.executeScript("arguments[0].scrollIntoView(true);", multiplierButton);
+                        await driver.sleep(1000);
+                        break;
+                    }
+                } catch (err) {
+                    console.log('Seletor falhou, tentando próximo... Erro:', err.message);
                     continue;
                 }
             }
 
-            if (multiplierButton) {
+            if (!multiplierButton) {
+                throw new Error('Botão Calculadora de Markup não encontrado após tentar todos os seletores');
+            }
+
+            // Multiple attempts to click the multiplier button
+            console.log('Tentando clicar no botão Calculadora de Markup...');
+            let multiplierClickSuccess = false;
+
+            // Attempt 1: Direct click
+            try {
                 await multiplierButton.click();
-                await driver.sleep(5000);
+                multiplierClickSuccess = true;
+                console.log('Click direto bem sucedido');
+            } catch (err) {
+                console.log('Click direto falhou, tentando alternativas... Erro:', err.message);
+            }
 
-                await driver.takeScreenshot().then((image) => {
-                    fs.writeFileSync('./fotos/markup2/tela-multiplier.png', image, 'base64');
-                    console.log('Gravou Foto 4 - Tela Multiplier');
-                });
+            // Attempt 2: JavaScript click if direct click failed
+            if (!multiplierClickSuccess) {
+                try {
+                    await driver.executeScript("arguments[0].click();", multiplierButton);
+                    multiplierClickSuccess = true;
+                    console.log('JavaScript click bem sucedido');
+                } catch (err) {
+                    console.log('JavaScript click falhou... Erro:', err.message);
+                }
+            }
 
-                // Fill multiplier inputs
-                const multiplierInputs = await driver.findElements(By.css('textarea, input, [contenteditable="true"]'));
-                await multiplierInputs[0].sendKeys('100');
-                await multiplierInputs[1].sendKeys('20');
-                await multiplierInputs[2].sendKeys('30');
+            // Attempt 3: Try dispatching multiple events if both clicks failed
+            if (!multiplierClickSuccess) {
+                try {
+                    await driver.executeScript(`
+                        arguments[0].dispatchEvent(new MouseEvent('mouseover', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                        arguments[0].dispatchEvent(new MouseEvent('mousedown', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                        arguments[0].dispatchEvent(new MouseEvent('click', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                        arguments[0].dispatchEvent(new MouseEvent('mouseup', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                    `, multiplierButton);
+                    multiplierClickSuccess = true;
+                    console.log('Event dispatch bem sucedido');
+                } catch (err) {
+                    console.log('Event dispatch falhou... Erro:', err.message);
+                }
+            }
 
-                // Find and click calculate button
-                const calculateSelectors = [
-                    By.css('[data-semantics-label="Calculate"]'),
-                    By.xpath("//flt-semantics[contains(., 'Calculate')]")
+            if (!multiplierClickSuccess) {
+                throw new Error('Não foi possível clicar no botão Calculadora de Markup após todas as tentativas');
+            }
+
+            // Wait for navigation and page load
+            console.log('Aguardando navegação e carregamento da página...');
+            await driver.sleep(3000);
+
+            // Take screenshot after navigation
+            await driver.takeScreenshot().then((image) => {
+                fs.writeFileSync('./fotos/markup2/tela-multiplier.png', image, 'base64');
+                console.log('Gravou Foto - Tela Multiplier');
+            });
+
+            // Fill multiplier inputs
+            console.log('Preenchendo campos da Calculadora de Markup...');
+            await driver.sleep(2000);
+
+            // Define the input fields we need to fill
+            const inputFields = [
+                { name: 'Despesas Variáveis', value: '100' },
+                { name: 'Despesas Fixas', value: '20' },
+                { name: 'Margem de Lucro', value: '30' }
+            ];
+
+            // Find and fill each input field
+            for (const field of inputFields) {
+                console.log(`Procurando campo ${field.name}...`);
+                const fieldSelectors = [
+                    By.css(`[data-semantics-identifier="${field.name}"]`),
+                    By.css(`input[aria-label="${field.name}"]`),
+                    By.css(`flt-semantics[aria-label="${field.name}"]`),
+                    By.xpath(`//flt-semantics[contains(@aria-label, '${field.name}')]`),
+                    By.xpath(`//input[@aria-label='${field.name}']`)
                 ];
 
-                let calculateButton = null;
-                for (const selector of calculateSelectors) {
+                let inputElement = null;
+                for (const selector of fieldSelectors) {
                     try {
-                        calculateButton = await driver.wait(until.elementLocated(selector), 5000);
-                        if (calculateButton) break;
-                    } catch (_) {
+                        inputElement = await driver.wait(until.elementLocated(selector), 3000);
+                        if (inputElement) {
+                            console.log(`Campo ${field.name} encontrado!`);
+                            // Try to make the element visible and interactable
+                            await driver.executeScript("arguments[0].scrollIntoView(true);", inputElement);
+                            await driver.sleep(1000);
+                            break;
+                        }
+                    } catch (err) {
+                        console.log(`Tentando próximo seletor para ${field.name}... Erro:`, err.message);
                         continue;
                     }
                 }
 
-                if (calculateButton) {
-                    await calculateButton.click();
+                if (!inputElement) {
+                    throw new Error(`Campo ${field.name} não encontrado`);
+                }
+
+                // Multiple attempts to set the input value
+                console.log(`Tentando definir valor do campo ${field.name}...`);
+                let setValue = false;
+
+                // Attempt 1: Direct sendKeys
+                try {
+                    await inputElement.clear();
+                    await inputElement.sendKeys(field.value);
+                    setValue = true;
+                    console.log(`SendKeys bem sucedido para ${field.name}`);
+                } catch (err) {
+                    console.log(`SendKeys falhou para ${field.name}, tentando JavaScript... Erro:`, err.message);
+                }
+
+                // Attempt 2: JavaScript if direct input fails
+                if (!setValue) {
+                    try {
+                        await driver.executeScript(`
+                            arguments[0].value = arguments[1];
+                            arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+                            arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+                            arguments[0].dispatchEvent(new Event('blur', { bubbles: true }));
+                        `, inputElement, field.value);
+                        setValue = true;
+                        console.log(`JavaScript set value bem sucedido para ${field.name}`);
+                    } catch (err) {
+                        console.log(`JavaScript set value falhou para ${field.name}... Erro:`, err.message);
+                    }
+                }
+
+                if (!setValue) {
+                    throw new Error(`Não foi possível definir o valor para o campo ${field.name}`);
+                }
+
+                // Verify the value was set
+                const fieldValue = await driver.executeScript("return arguments[0].value;", inputElement);
+                console.log(`Valor do campo ${field.name} definido:`, fieldValue);
+
+                await driver.sleep(1000);
+            }
+
+            // Take screenshot after filling all fields
+            await driver.takeScreenshot().then((image) => {
+                fs.writeFileSync('./fotos/markup2/campos-multiplicador-preenchidos.png', image, 'base64');
+                console.log('Gravou Foto - Campos do Multiplicador Preenchidos');
+            });
+
+            // Find and click calculate button
+            console.log('Procurando botão Calculate...');
+            const calculateSelectors = [
+                By.css('[data-semantics-label="Calculate"]'),
+                By.css('flt-semantics[aria-label="Calculate"]'),
+                By.xpath("//flt-semantics[contains(., 'Calculate')]"),
+                By.xpath("//*[contains(text(), 'Calculate')]")
+            ];
+
+            let calculateButton = null;
+            for (const selector of calculateSelectors) {
+                try {
+                    calculateButton = await driver.wait(until.elementLocated(selector), 3000);
+                    if (calculateButton) {
+                        console.log('Botão Calculate encontrado!');
+                        await driver.executeScript("arguments[0].scrollIntoView(true);", calculateButton);
+                        await driver.sleep(1000);
+                        break;
+                    }
+                } catch (err) {
+                    console.log('Tentando próximo seletor para calculate... Erro:', err.message);
+                    continue;
+                }
+            }
+
+            if (!calculateButton) {
+                throw new Error('Botão Calculate não encontrado');
+            }
+
+            // Multiple attempts to click the calculate button
+            console.log('Tentando clicar no botão Calculate...');
+            let calculateClickSuccess = false;
+
+            // Attempt 1: Direct click
+            try {
+                await calculateButton.click();
+                calculateClickSuccess = true;
+                console.log('Click direto bem sucedido');
+            } catch (err) {
+                console.log('Click direto falhou, tentando alternativas... Erro:', err.message);
+            }
+
+            // Attempt 2: JavaScript click if direct click failed
+            if (!calculateClickSuccess) {
+                try {
+                    await driver.executeScript("arguments[0].click();", calculateButton);
+                    calculateClickSuccess = true;
+                    console.log('JavaScript click bem sucedido');
+                } catch (err) {
+                    console.log('JavaScript click falhou... Erro:', err.message);
+                }
+            }
+
+            // Attempt 3: Try dispatching multiple events if both clicks failed
+            if (!calculateClickSuccess) {
+                try {
+                    await driver.executeScript(`
+                        arguments[0].dispatchEvent(new MouseEvent('mouseover', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                        arguments[0].dispatchEvent(new MouseEvent('mousedown', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                        arguments[0].dispatchEvent(new MouseEvent('click', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                        arguments[0].dispatchEvent(new MouseEvent('mouseup', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+                    `, calculateButton);
+                    calculateClickSuccess = true;
+                    console.log('Event dispatch bem sucedido');
+                } catch (err) {
+                    console.log('Event dispatch falhou... Erro:', err.message);
+                }
+            }
+
+            if (!calculateClickSuccess) {
+                throw new Error('Não foi possível clicar no botão Calculate após todas as tentativas');
+            }
+
+            await driver.sleep(3000);
+
+            // Take screenshot after calculation
+            await driver.takeScreenshot().then((image) => {
+                fs.writeFileSync('./fotos/markup2/resultado-multiplier.png', image, 'base64');
+                console.log('Gravou Foto - Resultado Multiplier');
+            });
+
+            // Test Divisor Markup
+            console.log('Testando Calculadora de Divisão de Markup...');
+            const backSelectors = [
+                By.css('[data-semantics-label="Back"]'),
+                By.xpath("//flt-semantics[contains(., 'Back')]")
+            ];
+
+            let backButton = null;
+            for (const selector of backSelectors) {
+                try {
+                    backButton = await driver.wait(until.elementLocated(selector), 5000);
+                    if (backButton) break;
+                } catch (err) {
+                    console.log('Tentando próximo seletor para back... Erro:', err.message);
+                    continue;
+                }
+            }
+
+            if (backButton) {
+                await backButton.click();
+                await driver.sleep(2000);
+
+                const divisorSelectors = [
+                    By.css('[data-semantics-label="Calculadora de Divisão de Markup"]'),
+                    By.xpath("//flt-semantics[contains(., 'Calculadora de Divisão de Markup')]")
+                ];
+
+                let divisorButton = null;
+                for (const selector of divisorSelectors) {
+                    try {
+                        divisorButton = await driver.wait(until.elementLocated(selector), 5000);
+                        if (divisorButton) break;
+                    } catch (err) {
+                        console.log('Tentando próximo seletor para divisor... Erro:', err.message);
+                        continue;
+                    }
+                }
+
+                if (divisorButton) {
+                    await divisorButton.click();
                     await driver.sleep(5000);
 
                     await driver.takeScreenshot().then((image) => {
-                        fs.writeFileSync('./fotos/markup2/resultado-multiplier.png', image, 'base64');
-                        console.log('Gravou Foto 5 - Resultado Multiplier');
+                        fs.writeFileSync('./fotos/markup2/tela-divisor.png', image, 'base64');
+                        console.log('Gravou Foto 6 - Tela Divisor');
                     });
 
-                    // Test Divisor Markup
-                    console.log('Testando Calculadora de Divisão de Markup...');
-                    const backSelectors = [
-                        By.css('[data-semantics-label="Back"]'),
-                        By.xpath("//flt-semantics[contains(., 'Back')]")
-                    ];
+                    // Fill divisor inputs
+                    const divisorInputs = await driver.findElements(By.css('textarea, input, [contenteditable="true"]'));
+                    await divisorInputs[0].sendKeys('100');
+                    await divisorInputs[1].sendKeys('20');
 
-                    let backButton = null;
-                    for (const selector of backSelectors) {
+                    // Find and click calculate button again
+                    let divisorCalculateButton = null;
+                    for (const selector of calculateSelectors) {
                         try {
-                            backButton = await driver.wait(until.elementLocated(selector), 5000);
-                            if (backButton) break;
-                        } catch (_) {
+                            divisorCalculateButton = await driver.wait(until.elementLocated(selector), 5000);
+                            if (divisorCalculateButton) break;
+                        } catch (err) {
+                            console.log('Tentando próximo seletor para calculate divisor... Erro:', err.message);
                             continue;
                         }
                     }
 
-                    if (backButton) {
-                        await backButton.click();
-                        await driver.sleep(2000);
+                    if (divisorCalculateButton) {
+                        await divisorCalculateButton.click();
+                        await driver.sleep(5000);
 
-                        const divisorSelectors = [
-                            By.css('[data-semantics-label="Calculadora de Divisão de Markup"]'),
-                            By.xpath("//flt-semantics[contains(., 'Calculadora de Divisão de Markup')]")
-                        ];
-
-                        let divisorButton = null;
-                        for (const selector of divisorSelectors) {
-                            try {
-                                divisorButton = await driver.wait(until.elementLocated(selector), 5000);
-                                if (divisorButton) break;
-                            } catch (_) {
-                                continue;
-                            }
-                        }
-
-                        if (divisorButton) {
-                            await divisorButton.click();
-                            await driver.sleep(5000);
-
-                            await driver.takeScreenshot().then((image) => {
-                                fs.writeFileSync('./fotos/markup2/tela-divisor.png', image, 'base64');
-                                console.log('Gravou Foto 6 - Tela Divisor');
-                            });
-
-                            // Fill divisor inputs
-                            const divisorInputs = await driver.findElements(By.css('textarea, input, [contenteditable="true"]'));
-                            await divisorInputs[0].sendKeys('100');
-                            await divisorInputs[1].sendKeys('20');
-
-                            // Find and click calculate button again
-                            let divisorCalculateButton = null;
-                            for (const selector of calculateSelectors) {
-                                try {
-                                    divisorCalculateButton = await driver.wait(until.elementLocated(selector), 5000);
-                                    if (divisorCalculateButton) break;
-                                } catch (_) {
-                                    continue;
-                                }
-                            }
-
-                            if (divisorCalculateButton) {
-                                await divisorCalculateButton.click();
-                                await driver.sleep(5000);
-
-                                await driver.takeScreenshot().then((image) => {
-                                    fs.writeFileSync('./fotos/markup2/resultado-divisor.png', image, 'base64');
-                                    console.log('Gravou Foto 7 - Resultado Divisor');
-                                });
-                            } else {
-                                throw new Error('Botão Calculate não encontrado na calculadora de divisão');
-                            }
-                        } else {
-                            throw new Error('Botão Calculadora de Divisão de Markup não encontrado');
-                        }
+                        await driver.takeScreenshot().then((image) => {
+                            fs.writeFileSync('./fotos/markup2/resultado-divisor.png', image, 'base64');
+                            console.log('Gravou Foto 7 - Resultado Divisor');
+                        });
                     } else {
-                        throw new Error('Botão Back não encontrado');
+                        throw new Error('Botão Calculate não encontrado na calculadora de divisão');
                     }
                 } else {
-                    throw new Error('Botão Calculate não encontrado na calculadora de multiplicação');
+                    throw new Error('Botão Calculadora de Divisão de Markup não encontrado');
                 }
             } else {
-                throw new Error('Botão Calculadora de Markup não encontrado');
+                throw new Error('Botão Back não encontrado');
             }
         } else {
             throw new Error('Botão "Grupo CI_CD_8" não encontrado após tentar todos os seletores');

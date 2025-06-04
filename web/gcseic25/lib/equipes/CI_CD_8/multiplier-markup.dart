@@ -78,6 +78,7 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
             children: [
               Semantics(
                 identifier: 'Despesas Variáveis',
+                label: 'Despesas Variáveis',
                 textField: true,
                 child: TextFormField(
                   controller: _despesasVariaveisController,
@@ -92,6 +93,7 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
               SizedBox(height: 16),
               Semantics(
                 identifier: 'Despesas Fixas',
+                label: 'Despesas Fixas',
                 textField: true,
                 child: TextFormField(
                   controller: _despesasFixasController,
@@ -106,6 +108,7 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
               SizedBox(height: 16),
               Semantics(
                 identifier: 'Margem de Lucro',
+                label: 'Margem de Lucro',
                 textField: true,
                 child: TextFormField(
                   controller: _margemLucroController,
@@ -119,6 +122,7 @@ class _MultiplierMarkupPageState extends State<MultiplierMarkupPage> {
               ),
               SizedBox(height: 24),
               Semantics(
+                identifier: 'Calculate',
                 label: 'Calculate',
                 button: true,
                 child: ElevatedButton(
